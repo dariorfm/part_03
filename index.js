@@ -13,6 +13,7 @@ morgan.token('body', (req) => {
 
 app.use(express.json());
 //app.use(morgan('tiny'));
+app.use(express.static('build'));
 app.use(cors());
 app.use(morgan(':method :url :status :response-time ms :body'));
 
