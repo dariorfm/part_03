@@ -13,9 +13,9 @@ morgan.token('body', (req) => {
     return JSON.stringify(req.body);
 });
 
+app.use(express.static('dist'));
 app.use(express.json());
 //app.use(morgan('tiny'));
-app.use(express.static('dist'));
 app.use(cors());
 app.use(morgan(':method :url :status :response-time ms :body'));
 
@@ -62,15 +62,17 @@ app.get('/info', (req, res) => {
     <p>${date}</p>`);
 });
 
-app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const person = persons.find(person => person.id === id);
-    if (person) {
-        res.json(person);
-    } else {
-        res.status(404).end();
-    }
-});
+app.get('/api/persons/:id', (req, res, next) => {
+    Person.findById(req.params.id)
+        .then(person => {
+            if (person) {
+                res.json(person);
+            } else {
+                res.status(404).end();
+            }
+        })
+        .catch(error => next(error));   
+    });
 
 app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndDelete(req.params.id)
@@ -108,6 +110,16 @@ app.post('/api/persons', (req, res) => {
 });
 
 app.use(unknownEndpoint);
+
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message);
+    if (error.name === 'CastError') {
+        return res.status(400).send({ error: 'malformatted id' });
+    }
+    next(error);
+};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
