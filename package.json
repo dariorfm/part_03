@@ -27,5 +27,9 @@
   },
   "eslintConfig": {
     "extends": "./node_modules/standard/eslintrc.json"
+  },
+  "standard": {
+    "ignore": "/dist/"
+    
   }
 }
